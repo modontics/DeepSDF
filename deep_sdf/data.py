@@ -12,6 +12,12 @@ import torch.utils.data
 import deep_sdf.workspace as ws
 
 
+# see https://pytorch.org/docs/stable/notes/randomness.html#reproducibility
+s = 911 * 13
+torch.manual_seed(s)
+random.seed(s)
+
+
 def get_instance_filenames(data_source, split):
     npzfiles = []
     for dataset in split:

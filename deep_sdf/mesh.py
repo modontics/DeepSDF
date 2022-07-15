@@ -29,8 +29,8 @@ def create_mesh(
     # transform first 3 columns
     # to be the x, y, z index
     samples[:, 2] = overall_index % N
-    samples[:, 1] = (overall_index.long() / N) % N
-    samples[:, 0] = ((overall_index.long() / N) / N) % N
+    samples[:, 1] = (overall_index.float() / N) % N
+    samples[:, 0] = ((overall_index.float() / N) / N) % N
 
     # transform first 3 columns
     # to be the x, y, z coordinate
@@ -45,7 +45,9 @@ def create_mesh(
     head = 0
 
     while head < num_samples:
-        sample_subset = samples[head : min(head + max_batch, num_samples), 0:3].cuda()
+        sample_subset = samples[head : min(head + max_batch, num_samples), 0:3]
+        if torch.cuda.is_available():
+            sample_subset = sample_subset.cuda()
 
         samples[head : min(head + max_batch, num_samples), 3] = (
             deep_sdf.utils.decode_sdf(decoder, latent_vec, sample_subset)
@@ -93,7 +95,7 @@ def convert_sdf_samples_to_ply(
 
     numpy_3d_sdf_tensor = pytorch_3d_sdf_tensor.numpy()
 
-    verts, faces, normals, values = skimage.measure.marching_cubes_lewiner(
+    verts, faces, normals, values = skimage.measure.marching_cubes(
         numpy_3d_sdf_tensor, level=0.0, spacing=[voxel_size] * 3
     )
 
